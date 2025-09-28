@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="dark-mode.css" />
+    <!-- Web compatibility layer must load first -->
+    <script src="web-compatibility.js"></script>
+    <!-- Core dependencies first -->
+    <script defer src="sjcl.js"></script>
+    <script defer src="secure-storage.js"></script>
+    
+    <!-- Core systems -->
+    <script defer src="trial-system.js"></script>
+    <script defer src="payment-system.js"></script>
+    
+    <!-- Feature modules -->
+    <script defer src="ui-helpers.js"></script>
+    <script defer src="backup-core.js"></script>
+    <script defer src="backup-profiles.js"></script>
+    <script defer src="settings-manager.js"></script>
+    <script defer src="advanced-encryption.js"></script>
+    <script defer src="enhanced-features.js"></script>
+    <script defer src="additional-features.js"></script>
+    <script defer src="master-toggle.js"></script>
+    <script defer src="settings-ui.js"></script>
+    
+    <!-- Main popup script last -->
+    <script defer src="popup.js"></script>
+  </head>
+  <body class="light-mode">
+    <div class="container-main-screen">
+      <div id="header" class="header-green">
+        <div class="header-inner">
+          <div class="header-left">
+            <img src="icons/48.png" class="header-logo" />
+            <div class="header-text">
+              <div class="large-title">Cookie Vault</div>
+              <div class="subtitle">Cybersecurity Extension v1.0</div>
+            </div>
+          </div>
+          <div class="header-controls">
+            <button id="auto-lock-toggle" class="icon-toggle" title="Toggle auto-lock">
+              <span class="lock-icon">&#128275;</span>
+            </button>
+            <button id="theme-toggle" class="theme-toggle" title="Toggle dark mode">
+              <span class="theme-icon">&#127769;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Main Tabs (Top Level) -->
+      <div class="main-tabs">
+        <button class="tab-button active" id="backup-main-tab">
+          <span class="tab-icon">↓</span>
+          Backup
+        </button>
+        <button class="tab-button" id="restore-main-tab">
+          <span class="tab-icon">↑</span>
+          Restore
+        </button>
+        <button class="tab-button" id="cloud-main-tab">
+          <span class="tab-icon">☁</span>
+          Cloud
+        </button>
+        <button class="tab-button" id="settings-main-tab">
+          <span class="tab-icon">⚙</span>
+          Settings
+        </button>
+      </div>
+      
+      <!-- Main Content Container -->
+      <div class="main-container">
+        <!-- Backup Section -->
+        <div class="main-section" id="backup-main-section">
+          <!-- Dashboard Tabs -->
+          <div class="dashboard-tabs">
+            <button class="tab-button active" id="status-tab">Status Overview</button>
+            <button class="tab-button" id="history-tab">Backup History</button>
+          </div>
+          <!-- Status Dashboard and Backup History Container -->
+          <div class="dashboard-container">
+            <!-- Status Dashboard -->
+            <div class="wrap dashboard-section" id="status-dashboard">
+              <span class="title">Status Overview</span>
+              <div class="status-grid">
+                <div class="status-item">
+                  <span class="status-label">Profile:</span>
+                  <span class="status-value" id="profile-name-status">Default</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">Total Cookies:</span>
+                  <span class="status-value" id="total-cookies">-</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">Auto Backup:</span>
+                  <span class="status-value" id="auto-backup-status-dash">Disabled</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">Storage Used:</span>
+                  <span class="status-value" id="storage-used">0 KB</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Backup History -->
+            <div class="wrap dashboard-section hidden" id="backup-history-wrap">
+              <span class="title">Backup History</span>
+              <div class="history-list" id="backup-history-list">
+                <div class="history-empty">No backups yet</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Backup Sub-tabs -->
+          <div class="backup-tabs">
+            <button class="tab-button active" id="manual-backup-tab">Manual Backup</button>
+            <button class="tab-button" id="auto-backup-tab">Automatic Backup</button>
+          </div>
+          <div class="backup-container">
+            <!-- Manual Backup -->
+            <div class="wrap backup-section" id="backup-wrap">
+              <!-- Profile Name Input -->
+              <div class="profile-name-section">
+                <label for="profile-name-input" class="profile-label">Profile Name (Optional)</label>
+                <input 
+                  type="text" 
+                  id="profile-name-input" 
+                  class="profile-input" 
+                  placeholder="e.g., Work, Personal, Shopping" 
+                  maxlength="30"
+                />
+                <small class="text-muted">Add a name to organize backups from different Chrome profiles</small>
+              </div>
+              
+              <button class="btn-primary" role="button" id="btn-backup">
+                Backup all cookies
+              </button>
+              <button class="btn-secondary" role="button" id="btn-selective-backup">
+                Selective backup
+              </button>
+              <div class="wrap-card hidden text-center" id="enc-passwd">
+                <form id="enc-passwd-form" class="gap-5px">
+                  <div>
+                    <small><b>Enter encryption password</b></small>
+                  </div>
+                  <div class="two-col-group">
+                    <input
+                      type="password"
+                      name="enc-passwd"
+                      id="inp-enc-passwd"
+                      minlength="3"
+                      required
+                      placeholder="password"
+                    />
+                    <button class="btn-enter text-muted">&#9166;</button>
+                  </div>
+                  <small class="text-muted"
+                    >Please don't forget this password, You'll need it when you
+                    restore your cookies.</small
+                  >
+                  
+                  <!-- Telegram Option -->
+                  <div class="telegram-backup-option" id="telegram-backup-option" style="margin-top: 10px;">
+                    <label class="checkbox-wrapper">
+                      <input type="checkbox" id="send-to-telegram-checkbox">
+                      <span class="checkmark"></span>
+                      <span class="checkbox-label">Also send to Telegram</span>
+                    </label>
+                    <small class="text-muted" id="telegram-option-status">Configure Telegram in Cloud section first</small>
+                  </div>
+                  
+                  <div class="progress-container hidden" id="backup-progress">
+                    <div class="progress-bar">
+                      <div class="progress-fill" id="backup-progress-fill"></div>
+                    </div>
+                    <small class="progress-text" id="backup-progress-text">Processing...</small>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Automatic Backup -->
+            <div class="wrap backup-section hidden" id="auto-backup-wrap">
+              <div class="backup-frequency-row">
+                <label for="auto-backup-schedule">Backup frequency:</label>
+                <select name="schedule" id="auto-backup-schedule" class="btn-enter">
+                    <option value="disabled">Disabled</option>
+                    <option value="15min">Every 15 minutes</option>
+                    <option value="30min">Every 30 minutes</option>
+                    <option value="hourly">Every Hour</option>
+                    <option value="2hours">Every 2 hours</option>
+                    <option value="6hours">Every 6 hours</option>
+                    <option value="12hours">Every 12 hours</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+                <label class="toggle-switch toggle-switch-small">
+                  <input type="checkbox" id="master-auto-backup-toggle" />
+                  <span class="toggle-slider toggle-slider-grey"></span>
+                </label>
+              </div>
+              <small id="auto-backup-status" class="text-muted"></small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Restore Section -->
+        <div class="main-section hidden" id="restore-main-section">
+          <div class="wrap" id="restore-wrap">
+            <div class="restore-header">
+              <span class="restore-icon">&#11014;</span>
+              <span class="title">Restore from Backup</span>
+            </div>
+            
+            <!-- Drag and Drop Area -->
+            <div class="drop-zone" id="drop-zone">
+              <div class="drop-content">
+                <div class="cloud-icon">&#9729;</div>
+                <div class="drop-text">Drop backup file here or click to browse</div>
+                <div class="supported-formats">Supports .ckz, .json, .csv, .txt, .xml files</div>
+              </div>
+              <input
+                type="file"
+                id="restore"
+                name="file"
+                accept=".ckz,.json,.csv,.txt,.xml"
+                style="display: none;"
+              />
+            </div>
+            
+            <p class="text-center" id="btn-upload-fallback">
+              <a href="#">Unable to upload a file?</a>
+            </p>
+            
+            <div class="wrap-card hidden text-center" id="dec-passwd">
+              <form id="dec-passwd-form" class="gap-15px">
+                <div class="gap-5px hidden" id="restore-using-text-wrap">
+                  <small><b>Paste the contents of your backup file</b></small>
+                  <textarea
+                    id="ckz-textarea"
+                    rows="5"
+                    placeholder="Paste your backup file contents here..."
+                    autofocus
+                  ></textarea>
+                </div>
+                <div class="gap-5px" id="password-section">
+                  <small><b>Enter decryption password</b></small>
+                  <div class="two-col-group">
+                    <input
+                      type="password"
+                      name="dec-passwd"
+                      id="inp-dec-passwd"
+                      minlength="3"
+                      required
+                      placeholder="password"
+                    />
+                    <button class="text-muted btn-enter">&#9166;</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div id="progress" class="hidden">
+              <progress id="progressbar" value="0" max="0"></progress>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cloud Section -->
+        <div class="main-section hidden" id="cloud-main-section">
+          <!-- Cloud Storage Options - Compact -->
+          <div class="cloud-providers-compact">
+            <div class="provider-item active" id="telegram-option">
+              <div class="provider-icon">T</div>
+              <div class="provider-info">
+                <span class="provider-name">Telegram</span>
+                <span class="provider-status hidden" id="telegram-connection-status">Connected</span>
+              </div>
+            </div>
+            <div class="provider-item premium" id="gdrive-option">
+              <div class="provider-icon">G</div>
+              <div class="provider-info">
+                <span class="provider-name">Google Drive</span>
+              </div>
+            </div>
+            <div class="provider-item premium" id="dropbox-option">
+              <div class="provider-icon">D</div>
+              <div class="provider-info">
+                <span class="provider-name">Dropbox</span>
+              </div>
+            </div>
+            <div class="provider-item premium" id="onedrive-option">
+              <div class="provider-icon">O</div>
+              <div class="provider-info">
+                <span class="provider-name">OneDrive</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="wrap compact-wrap" id="cloud-wrap">
+            <div class="telegram-compact-header">
+              <span class="title">Telegram Backup</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="auto-telegram-backup" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div id="telegram-credentials-wrap" class="telegram-config">
+              <div class="input-row">
+                <input 
+                  type="text" 
+                  id="telegram-bot-token" 
+                  class="form-input" 
+                  placeholder="Bot token" 
+                />
+              </div>
+              
+              <div class="input-row">
+                <input 
+                  type="text" 
+                  id="telegram-chat-id" 
+                  class="form-input" 
+                  placeholder="Chat ID" 
+                />
+              </div>
+              
+              <div class="compact-button-group">
+                <button type="button" id="test-telegram-connection" class="btn-compact btn-test-compact">
+                  Test
+                </button>
+                <button type="button" id="save-telegram-credentials" class="btn-compact btn-save-compact">
+                  Save
+                </button>
+              </div>
+              
+              <div id="telegram-status" class="status-indicator-compact hidden">
+                <span class="status-text"></span>
+              </div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="history-compact">
+              <div class="history-header">
+                <span class="subtitle">Cloud History</span>
+                <button class="btn-link" id="refresh-cloud-backups">Refresh</button>
+              </div>
+              <div class="cloud-backups-list-compact" id="cloud-backups-list">
+                <div class="empty-state-compact">No cloud backups yet</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div class="main-section hidden" id="settings-main-section">
+          <div class="wrap settings-wrap">
+            <span class="title">Advanced Settings</span>
+            
+            <div class="settings-grid">
+              <!-- Backup Profiles -->
+              <div class="settings-card">
+                <div class="settings-icon">👥</div>
+                <div class="settings-info">
+                  <h3>Backup Profiles</h3>
+                  <p>Create custom profiles for different cookie sets (Work, Shopping, Social)</p>
+                  <button class="btn-primary" onclick="showProfileSelector()">Manage Profiles</button>
+                </div>
+              </div>
+              
+              <!-- Import/Export Settings -->
+              <div class="settings-card">
+                <div class="settings-icon">📦</div>
+                <div class="settings-info">
+                  <h3>Import/Export Settings</h3>
+                  <p>Backup and transfer your extension settings</p>
+                  <div class="settings-actions">
+                    <button class="btn-secondary" onclick="exportSettings()">Export</button>
+                    <button class="btn-secondary" onclick="showImportSettingsDialog()">Import</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Advanced Encryption -->
+              <div class="settings-card">
+                <div class="settings-icon">🔐</div>
+                <div class="settings-info">
+                  <h3>Advanced Encryption</h3>
+                  <p>Configure enhanced security options and encryption methods</p>
+                  <button class="btn-primary" onclick="showEncryptionSettingsDialog()">Configure</button>
+                </div>
+              </div>
+              
+              <!-- Account Management -->
+              <div class="settings-card">
+                <div class="settings-icon">💳</div>
+                <div class="settings-info">
+                  <h3>Account & Subscription</h3>
+                  <p>Manage your subscription and payment details</p>
+                  <button class="btn-primary" onclick="showAccountManagement()">Manage Account</button>
+                </div>
+              </div>
+              
+              <!-- Reset Settings -->
+              <div class="settings-card">
+                <div class="settings-icon">🔄</div>
+                <div class="settings-info">
+                  <h3>Reset Settings</h3>
+                  <p>Reset all settings to default values</p>
+                  <button class="btn-secondary" onclick="resetSettings()">Reset All</button>
+                </div>
+              </div>
+              
+              <!-- About -->
+              <div class="settings-card">
+                <div class="settings-icon">ℹ️</div>
+                <div class="settings-info">
+                  <h3>About Cookie Vault</h3>
+                  <p>Version 1.0.0 - Chrome Extension</p>
+                  <small>© 2025 Cookie Vault</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cookie Selection Modal -->
+      <div class="modal hidden" id="cookie-selection-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Select Cookies to Backup</h3>
+            <button class="modal-close" id="close-cookie-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="search-container">
+              <input type="text" id="cookie-search" placeholder="Search cookies by domain or name..." />
+              <div class="search-stats">
+                <span id="selected-count">0</span> selected
+              </div>
+            </div>
+            <div class="cookie-list" id="cookie-list">
+              <!-- Cookie items will be populated here -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" id="select-all-cookies">Select All</button>
+            <button class="btn-secondary" id="deselect-all-cookies">Deselect All</button>
+            <button class="btn-primary" id="backup-selected-cookies">Backup Selected</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div id="messages"></div>
+        <div id="warnings"></div>
+      </div>
+      <div id="credits" class="text-center text-muted">
+        <small>
+          <a target="_blank" href="http://github.com/candh">candh</a>
+          /
+          <a
+            target="_blank"
+            href="https://github.com/candh/cookies-backup-chrome"
+            >github</a
+          >
+        </small>
+      </div>
+    </div>
+  </body>
+</html>
